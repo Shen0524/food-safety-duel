@@ -13,5 +13,6 @@ window.APP_CONFIG = {
   intro: "兩人即時對戰：看到一句常見的食安「說法」，判斷它是<strong>正確</strong>還是<strong>謠言</strong>。答對加分、答錯歸零，比比看誰才是食安達人！所有作答會匿名記錄，最後分析<strong>大家最常答錯的題目</strong>。",
   trueLabel: "說法正確",                          // 左邊選項文字
   falseLabel: "這是謠言",                          // 右邊選項文字
-  footer: "適合食安宣導、闖關活動、課堂教學使用。<br>掃 QR Code 即可雙人對戰，無需安裝任何 App。"
+  footer: "適合食安宣導、闖關活動、課堂教學使用。<br>掃 QR Code 即可雙人對戰，無需安裝任何 App。",
+  adminPass: "reset2026"                           // 「重置統計」按鈕的管理密碼，請自行修改
 };
