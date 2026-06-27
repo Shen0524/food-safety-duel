@@ -12,9 +12,9 @@
   <div class="wrap">
     <div class="topbar">
       <div class="brand">
-        <span class="logo">🍱</span>
-        <div>食安謠言大對決
-          <small>破解迷思・防詐食安・即時對戰</small>
+        <span class="logo" id="brandLogo">🍱</span>
+        <div><span id="brandTitle">食安謠言大對決</span>
+          <small id="brandSubtitle">破解迷思・防詐食安・即時對戰</small>
         </div>
       </div>
       <button class="linkbtn" id="navStats">📊 統計分析</button>
@@ -29,8 +29,8 @@
     <!-- ===== 首頁 ===== -->
     <section id="view-home" class="view">
       <div class="card">
-        <h1>準備好分辨真假食安了嗎？</h1>
-        <p class="sub">兩人即時對戰：看到一句常見的食安「說法」，判斷它是<strong>正確</strong>還是<strong>謠言</strong>。
+        <h1 id="homeTitle">準備好分辨真假食安了嗎？</h1>
+        <p class="sub" id="homeIntro">兩人即時對戰：看到一句常見的食安「說法」，判斷它是<strong>正確</strong>還是<strong>謠言</strong>。
           答對加分、答錯歸零，比比看誰才是食安達人！所有作答會匿名記錄，最後分析<strong>大家最常答錯的題目</strong>。</p>
         <div class="btn-row">
           <button class="btn" id="btnCreate">🎮 建立對戰房間</button>
@@ -38,7 +38,7 @@
           <button class="btn ghost" id="btnStats">📊 查看常錯題目統計</button>
         </div>
       </div>
-      <p class="footnote">適合食安宣導、闖關活動、課堂教學使用。<br>掃 QR Code 即可雙人對戰，無需安裝任何 App。</p>
+      <p class="footnote" id="homeFooter">適合食安宣導、闖關活動、課堂教學使用。<br>掃 QR Code 即可雙人對戰，無需安裝任何 App。</p>
     </section>
 
     <!-- ===== 建立房間 / 等待 ===== -->
@@ -210,6 +210,7 @@
   <!-- QR Code 產生器 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <!-- 應用程式 -->
+  <script src="config.js"></script>
   <script src="firebase-config.js"></script>
   <script src="questions.js"></script>
   <script src="app.js"></script>

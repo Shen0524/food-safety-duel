@@ -10,6 +10,8 @@
 
   const QDURATION = 20;        // 每題秒數
   const REVEAL_MS = 1500;      // 兩人答完後，停留看解析的時間(毫秒)
+  const CFG = window.APP_CONFIG || {};
+  const TOPIC = (CFG.topic || "default").replace(/[^a-z0-9\-]/gi, "-").toLowerCase();
   const QR = window.QRCode;
   const QUESTIONS = window.QUESTIONS || [];
   const QMAP = {};
@@ -33,6 +35,9 @@
 
   let db = null;
   let firebaseReady = false;
+
+  // 所有資料都放在 topics/<主題>/ 底下，讓多個主題共用同一個 Firebase 也不會混淆
+  function ref(path) { return db.ref("topics/" + TOPIC + "/" + path); }
 
   // ---- 小工具 ----
   const $ = (id) => document.getElementById(id);
@@ -106,7 +111,7 @@
     const roomId = randCode();
     S.role = "host";
     S.roomId = roomId;
-    S.roomRef = db.ref("rooms/" + roomId);
+    S.roomRef = ref("rooms/" + roomId);
     S.statsWritten = false;
     S.finishedShown = false;
     S.advancedFrom = -1;
@@ -164,8 +169,8 @@
     const name = ($("guestName").value || "").trim() || "對手";
     if (code.length < 4) { toast("請輸入正確房號"); return; }
 
-    const ref = db.ref("rooms/" + code);
-    ref.get().then(snap => {
+    const roomRef = ref("rooms/" + code);
+    roomRef.get().then(snap => {
       if (!snap.exists()) { toast("找不到此房間，請確認房號"); return; }
       const room = snap.val();
       if (room.guest && room.guest.name) { toast("房間已有對手，無法加入"); return; }
@@ -173,10 +178,10 @@
 
       S.role = "guest";
       S.roomId = code;
-      S.roomRef = ref;
+      S.roomRef = roomRef;
       resolveQuestions(room.questionIds || []);
 
-      ref.child("guest").set({ name: name, score: 0 }).then(() => {
+      roomRef.child("guest").set({ name: name, score: 0 }).then(() => {
         $("lobbyCode").textContent = code;
         $("lobbyHostName").textContent = room.host ? room.host.name : "主持方";
         $("lobbyGuestName").textContent = name;
@@ -502,15 +507,15 @@
         if (!a) return;
         totalAnswers++;
         const wrong = !a.correct ? 1 : 0;
-        db.ref("stats/questions/" + qid + "/attempts").transaction(v => (v || 0) + 1);
-        if (wrong) db.ref("stats/questions/" + qid + "/wrong").transaction(v => (v || 0) + 1);
+        ref("stats/questions/" + qid + "/attempts").transaction(v => (v || 0) + 1);
+        if (wrong) ref("stats/questions/" + qid + "/wrong").transaction(v => (v || 0) + 1);
       });
     });
-    db.ref("stats/totals/matches").transaction(v => (v || 0) + 1);
-    db.ref("stats/totals/answers").transaction(v => (v || 0) + totalAnswers);
+    ref("stats/totals/matches").transaction(v => (v || 0) + 1);
+    ref("stats/totals/answers").transaction(v => (v || 0) + totalAnswers);
 
     // 對戰記錄
-    db.ref("matches").push({
+    ref("matches").push({
       host: room.host ? room.host.name : "",
       guest: room.guest ? room.guest.name : "",
       hostScore: sumScore(room, "host"),
@@ -530,7 +535,7 @@
       $("statsList").innerHTML = '<p class="muted center">需先設定 Firebase 才能讀取統計。</p>';
       return;
     }
-    db.ref("stats").get().then(snap => {
+    ref("stats").get().then(snap => {
       const data = snap.val() || {};
       const totals = data.totals || {};
       const qstats = data.questions || {};
@@ -619,7 +624,23 @@
     $("joinCode").addEventListener("input", e => { e.target.value = e.target.value.toUpperCase(); });
   }
 
+  // 依 config.js 套用品牌文字（標題、副標、選項文字等）
+  function applyBranding() {
+    const setText = (id, v) => { const el = $(id); if (el && v != null) el.textContent = v; };
+    const setHTML = (id, v) => { const el = $(id); if (el && v != null) el.innerHTML = v; };
+    if (CFG.title) document.title = CFG.title;
+    setText("brandTitle", CFG.title);
+    setText("brandSubtitle", CFG.subtitle);
+    setText("brandLogo", CFG.logo);
+    setText("homeTitle", CFG.title);
+    setHTML("homeIntro", CFG.intro);
+    setHTML("homeFooter", CFG.footer);
+    if (CFG.trueLabel) $("choiceTrue").innerHTML = '<span class="emoji">✅</span>' + esc(CFG.trueLabel);
+    if (CFG.falseLabel) $("choiceFalse").innerHTML = '<span class="emoji">❌</span>' + esc(CFG.falseLabel);
+  }
+
   function start() {
+    applyBranding();
     initFirebase();
     bind();
     // 從 QR Code 連結進入 → 直接帶到加入畫面
